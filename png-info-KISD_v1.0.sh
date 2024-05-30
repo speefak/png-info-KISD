@@ -21,7 +21,7 @@
 
  CaptionSection=$(echo "$PNGInfo" | sed -n '/Caption/,/Negative prompt:/p' ) 
  ParameterSection=$(echo "$PNGInfo" | sed -n '/parameters/,/Negative prompt:/p' ) 
- PositivePrompt=$(echo "$CaptionSection$ParameterSection" | sed -n '/parameters\|Caption/,/Steps:/p' | grep -v "Steps:" | sed 's/^.*:/Positive Prompt: \n/' | sed -e 's/ //' )
+ PositivePrompt=$(echo "$CaptionSection$ParameterSection" | sed -n '/parameters\|Caption/,/Steps:\|Negative prompt:/p' | grep -av "Steps:\|Negative prompt:" | sed 's/^.*:/Positive Prompt: \n/' | sed -e 's/ //' )
  NegativePrompt=$(echo "$PNGInfo" | sed -n '/Negative prompt:/,/png:IHDR/ {/Negative prompt:/,/Properties:/p}' | \
 			grep -av "png:IHDR\|Properties:\|Steps:" | \
 			sed s'/Negative prompt: /Negative prompt:\n/')
@@ -161,8 +161,8 @@ check_for_required_packages () {
 
 	# printf png info ( GUI or CLI )
 	if [[ -n $OutputGUI ]] || [[ -n $(pgrep nemo) ]]; then		#use GUI if nemo runs
-		#ZenityStringParsed=$(tr -cd '[:alnum:][:cntrl:][:space:][:punct:]' <<< "$PositivePrompt \n\n$NegativePrompt \n\n$StepsSection" )
-		zenity --info --text "\n\n$PositivePrompt \n\n$NegativePrompt \n\n$StepsSection\n\n" --title "$PNGFile" &
+		ZenityStringParsed=$(tr -cd '[:alnum:][:cntrl:][:space:][:punct:]' <<< "$PositivePrompt \n\n$NegativePrompt \n\n$StepsSection\n\n" )
+		zenity --info --text "$ZenityStringParsed" --title "$PNGFile" &
 		# focus on zenity window
 		sleep 0.2
 		wmctrl -a "$PNGFile" #$(wmctrl -lp | grep "$PNGFile" | cut -d " " -f1)
@@ -175,11 +175,3 @@ check_for_required_packages () {
 exit
 
 #------------------------------------------------------------------------------------------------------------
-
-#testpictures
- 00126-10000.png	# parameter
- 00132-2680829126.png	# ü zeichen
- 00065-3405954951.png	# Caption 
- 00086-1400110057.png	# no negative promt
-
-
